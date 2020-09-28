@@ -34,7 +34,6 @@ const UpCaret = styled(DownCaret)``;
 
 function CustomSelect({options}) {
   const [isOpen, setIsOpen] = useState(false);
-
   const [selectedOption, setSelectedOption] = useState(null);
 
   useEffect(() => console.log(selectedOption,[selectedOption]));
@@ -44,9 +43,25 @@ function CustomSelect({options}) {
   const onOptionClicked = value => e => {
     setSelectedOption(value);
     setIsOpen(false);
+    console.log(e.target);
+    let clickedItem = e.target;
+    // clickedItem.setAttribute('aria-selected', true); // TODO this is not persistent
+    // let otherItems = getElementSiblings(e.target);
+    // otherItems.forEach(item => item.setAttribute('aria-selected', false));
     let selectedElm = e.target.parentElement.previousElementSibling;
+    selectedElm.setAttribute('aria-activedescendant', clickedItem.id);
     selectedElm.focus();
   };
+
+  const getElementSiblings = (elm) => {
+    let sibs = [];
+    let sib = elm.parentElement.firstChild;
+    while(sib) {
+      sib !== elm && sibs.push(sib);
+      sib = sib.nextElementSibling;
+    }
+    return sibs;
+  }
 
   const selectedItemIndex = options.indexOf(selectedOption);
 
@@ -70,7 +85,7 @@ function CustomSelect({options}) {
       case 'ArrowDown':
         e.preventDefault();
         if(isOpen) {
-          const firstItemElm = e.target.nextElementSibling.children[0];
+          const firstItemElm = e.target.nextElementSibling.children[0]; // todo put this logic in JSX?
           firstItemElm.focus();
         }
         else if(selectedItemIndex < options.length - 1)
@@ -107,7 +122,7 @@ function CustomSelect({options}) {
 
   return (
     <CustomSelectContainer>
-      <SelectedItem tabIndex='0' onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}>
+      <SelectedItem tabIndex='0' aria-expanded={isOpen ? true : false} onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}>
         {selectedOption || 'Choose a fruit'}
         {isOpen ? (
           <UpCaret src='https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor' alt='up-caret'></UpCaret>
@@ -117,7 +132,7 @@ function CustomSelect({options}) {
       </SelectedItem>
         <SelectItems style={{display: !isOpen && 'none'}}>
           {options.map(option => (
-            <SelectItem tabIndex='0' onClick={onOptionClicked(option)} onKeyDown={onItemKeyDown} key={Math.random()}>
+            <SelectItem tabIndex='0' aria-selected={option === selectedOption ? 'true' : 'false'} onClick={onOptionClicked(option)} onKeyDown={onItemKeyDown} key={Math.random()}>
               {option}
             </SelectItem>
           ))}

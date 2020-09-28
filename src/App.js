@@ -6,10 +6,7 @@ function App() {
   const options2 = ["mango", "watermelon", "kiwi", "pear"]
 
   return (
-    <>
       <CustomSelect options={options1}></CustomSelect>
-      <CustomSelect options={options2}></CustomSelect>
-    </>
   );
 }
 
