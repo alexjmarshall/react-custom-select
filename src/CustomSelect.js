@@ -9,7 +9,7 @@ const CustomSelectContainer = styled("div")`
 `;
 
 const SelectSelected = styled("div")`
-  padding: 0 0.2rem;
+  padding: 0 0.2rem 0.2rem 0.2rem;
 `;
 
 const SelectItems = styled("div")`
@@ -33,11 +33,11 @@ const DownCaret = styled.img`
 
 const UpCaret = styled(DownCaret)``;
 
-function CustomSelect() {
+function CustomSelect({options}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
-  const options = ["banana", "apple", "orange", "cherry"];
+//   const options = ["banana", "apple", "orange", "cherry"];
   const toggleIsOpen = () => setIsOpen(!isOpen);
   const onOptionClicked = value => () => {
     setSelectedOption(value);
@@ -49,9 +49,11 @@ function CustomSelect() {
     <CustomSelectContainer>
       <SelectSelected onClick={toggleIsOpen}>
         {selectedOption || "Choose a fruit"}
-        {isOpen ? <UpCaret src="https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor" alt="up-caret"></UpCaret>
-                : <DownCaret src="https://icongr.am/fontawesome/caret-down.svg?size=128&color=currentColor" alt="down-caret"></DownCaret>
-        }
+        {isOpen ? (
+          <UpCaret src="https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor" alt="up-caret"></UpCaret>
+        ) : (
+          <DownCaret src="https://icongr.am/fontawesome/caret-down.svg?size=128&color=currentColor" alt="down-caret"></DownCaret>
+        )}
       </SelectSelected>
       {isOpen && (
         <SelectItems>
@@ -60,7 +62,7 @@ function CustomSelect() {
               {option}
             </SelectItem>
           ))}
-        </SelectItems>        
+        </SelectItems>
       )}
     </CustomSelectContainer>
   );
