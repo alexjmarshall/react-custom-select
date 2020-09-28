@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const CustomSelectContainer = styled("div")`
@@ -8,7 +8,7 @@ const CustomSelectContainer = styled("div")`
   border: 1px solid black;
 `;
 
-const SelectSelected = styled("div")`
+const SelectedItem = styled("div")`
   padding: 0 0.2em 0.2em 0.2em;
 `;
 
@@ -21,7 +21,7 @@ const SelectItems = styled("div")`
   background-color: white;
 `;
 
-const SelectItem = styled(SelectSelected)``;
+const SelectItem = styled(SelectedItem)``;
 
 const DownCaret = styled.img`
   height: 1em;
@@ -35,33 +35,63 @@ const UpCaret = styled(DownCaret)``;
 function CustomSelect({options}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
-
+  useEffect(() => console.log(selectedOption,[selectedOption]));
   const toggleIsOpen = () => setIsOpen(!isOpen);
   const onOptionClicked = value => () => {
     setSelectedOption(value);
     setIsOpen(false);
-    console.log(selectedOption);
   };
+  const selectedItemIndex = options.indexOf(selectedOption);
+  const onSelectKeyDown = e => {
+    const firstItemElm = e.target.nextElementSibling.children[0];
+    const items = e.target.nextElementSibling.children;
+
+    switch(e.key) {
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        toggleIsOpen();
+        break;
+      case 'Escape':
+        setIsOpen(false);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if(!isOpen && selectedItemIndex > 0) {
+          let prevItemIndex = selectedItemIndex - 1;
+          items[prevItemIndex].click(options[prevItemIndex]);
+        }
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        if(isOpen)
+          firstItemElm.focus();
+        else if(selectedItemIndex < options.length - 1) {
+            let nextItemIndex = selectedItemIndex + 1;
+            items[nextItemIndex].click(options[nextItemIndex]);
+        }
+        break;
+      default:
+    }
+  }
 
   return (
     <CustomSelectContainer>
-      <SelectSelected onClick={toggleIsOpen}>
-        {selectedOption || "Choose a fruit"}
+      <SelectedItem tabIndex='0' onClick={toggleIsOpen} onKeyDown={onSelectKeyDown}>
+        {selectedOption || 'Choose a fruit'}
         {isOpen ? (
-          <UpCaret src="https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor" alt="up-caret"></UpCaret>
+          <UpCaret src='https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor' alt='up-caret'></UpCaret>
         ) : (
-          <DownCaret src="https://icongr.am/fontawesome/caret-down.svg?size=128&color=currentColor" alt="down-caret"></DownCaret>
+          <DownCaret src='https://icongr.am/fontawesome/caret-down.svg?size=128&color=currentColor' alt='down-caret'></DownCaret>
         )}
-      </SelectSelected>
-      {isOpen && (
-        <SelectItems>
+      </SelectedItem>
+        <SelectItems style={{display: !isOpen && 'none'}}>
           {options.map(option => (
-            <SelectItem onClick={onOptionClicked(option)} key={Math.random()}>
+            <SelectItem tabIndex='0' onClick={onOptionClicked(option)} key={Math.random()}>
               {option}
             </SelectItem>
           ))}
         </SelectItems>
-      )}
     </CustomSelectContainer>
   );
 }
