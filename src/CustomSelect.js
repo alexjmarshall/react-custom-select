@@ -34,16 +34,23 @@ const UpCaret = styled(DownCaret)``;
 
 function CustomSelect({options}) {
   const [isOpen, setIsOpen] = useState(false);
+
   const [selectedOption, setSelectedOption] = useState(null);
+
   useEffect(() => console.log(selectedOption,[selectedOption]));
+
   const toggleIsOpen = () => setIsOpen(!isOpen);
-  const onOptionClicked = value => () => {
+
+  const onOptionClicked = value => e => {
     setSelectedOption(value);
     setIsOpen(false);
+    let selectedElm = e.target.parentElement.previousElementSibling;
+    selectedElm.focus();
   };
+
   const selectedItemIndex = options.indexOf(selectedOption);
-  const onSelectKeyDown = e => {
-    const firstItemElm = e.target.nextElementSibling.children[0];
+
+  const onSelectedKeyDown = e => {
     const items = e.target.nextElementSibling.children;
 
     switch(e.key) {
@@ -57,19 +64,42 @@ function CustomSelect({options}) {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        if(!isOpen && selectedItemIndex > 0) {
-          let prevItemIndex = selectedItemIndex - 1;
-          items[prevItemIndex].click(options[prevItemIndex]);
-        }
+        if(!isOpen && selectedItemIndex > 0)
+          items[selectedItemIndex - 1].click();
         break;
       case 'ArrowDown':
         e.preventDefault();
-        if(isOpen)
+        if(isOpen) {
+          const firstItemElm = e.target.nextElementSibling.children[0];
           firstItemElm.focus();
-        else if(selectedItemIndex < options.length - 1) {
-            let nextItemIndex = selectedItemIndex + 1;
-            items[nextItemIndex].click(options[nextItemIndex]);
         }
+        else if(selectedItemIndex < options.length - 1)
+            items[selectedItemIndex + 1].click();
+        break;
+      default:
+    }
+  }
+
+  const onItemKeyDown = (e) => {
+    switch(e.key) {
+      case 'Enter':
+        e.preventDefault();
+        e.target.click();
+        break;
+      case 'Escape':
+        setIsOpen(false);
+        let selectedElm = e.target.parentElement.previousElementSibling;
+        selectedElm.focus();
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        let prevItem = e.target.previousElementSibling;
+        prevItem && prevItem.focus();
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        let nextItem = e.target.nextElementSibling;
+        nextItem && nextItem.focus();
         break;
       default:
     }
@@ -77,7 +107,7 @@ function CustomSelect({options}) {
 
   return (
     <CustomSelectContainer>
-      <SelectedItem tabIndex='0' onClick={toggleIsOpen} onKeyDown={onSelectKeyDown}>
+      <SelectedItem tabIndex='0' onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}>
         {selectedOption || 'Choose a fruit'}
         {isOpen ? (
           <UpCaret src='https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor' alt='up-caret'></UpCaret>
@@ -87,7 +117,7 @@ function CustomSelect({options}) {
       </SelectedItem>
         <SelectItems style={{display: !isOpen && 'none'}}>
           {options.map(option => (
-            <SelectItem tabIndex='0' onClick={onOptionClicked(option)} key={Math.random()}>
+            <SelectItem tabIndex='0' onClick={onOptionClicked(option)} onKeyDown={onItemKeyDown} key={Math.random()}>
               {option}
             </SelectItem>
           ))}
