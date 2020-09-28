@@ -4,31 +4,30 @@ import styled from 'styled-components';
 const CustomSelectContainer = styled("div")`
   position: relative;
   display: inline-block;
-  width: 8rem;
+  width: 8em;
   border: 1px solid black;
 `;
 
 const SelectSelected = styled("div")`
-  padding: 0 0.2rem 0.2rem 0.2rem;
+  padding: 0 0.2em 0.2em 0.2em;
 `;
 
 const SelectItems = styled("div")`
   position: absolute;
-  width: 8rem;
+  width: 8em;
   background: #ffffff;
   border: 1px solid black;
   margin-left: -1px;
   background-color: white;
 `;
 
-const SelectItem = styled("div")`
-  padding: 0 0.2rem;
-`;
+const SelectItem = styled(SelectSelected)``;
 
 const DownCaret = styled.img`
-  height: 1rem;
+  height: 1em;
   position: absolute;
   right: 0.2rem;
+  margin-top: 0.2em;
 `;
 
 const UpCaret = styled(DownCaret)``;
@@ -37,7 +36,6 @@ function CustomSelect({options}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(null);
 
-//   const options = ["banana", "apple", "orange", "cherry"];
   const toggleIsOpen = () => setIsOpen(!isOpen);
   const onOptionClicked = value => () => {
     setSelectedOption(value);
