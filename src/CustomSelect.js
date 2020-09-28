@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
+//TODO em vs. rem
+
 const CustomSelectContainer = styled("div")`
   position: relative;
   display: inline-block;
@@ -32,11 +34,11 @@ const DownCaret = styled.img`
 
 const UpCaret = styled(DownCaret)``;
 
-function CustomSelect({options}) {
+function CustomSelect({options, uniqueId}) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(options[0]);
 
-  useEffect(() => console.log(selectedOption,[selectedOption]));
+  useEffect(() => console.log(selectedOption),[selectedOption]);
 
   const toggleIsOpen = () => setIsOpen(!isOpen);
 
@@ -122,15 +124,16 @@ function CustomSelect({options}) {
 
   return (
     <CustomSelectContainer>
-      <SelectedItem tabIndex='0' aria-expanded={isOpen ? true : false} onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}>
-        {selectedOption || 'Choose a fruit'}
+      <label htmlFor={`selected_item_${uniqueId}`}>Choose a fruit:</label>
+      <SelectedItem id={`selected_item_${uniqueId}`} tabIndex='0' aria-expanded={isOpen ? true : false} onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}>
+        {selectedOption}
         {isOpen ? (
           <UpCaret src='https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor' alt='up-caret'></UpCaret>
         ) : (
           <DownCaret src='https://icongr.am/fontawesome/caret-down.svg?size=128&color=currentColor' alt='down-caret'></DownCaret>
         )}
       </SelectedItem>
-        <SelectItems style={{display: !isOpen && 'none'}}>
+        <SelectItems role='listbox' style={{display: !isOpen && 'none'}}>
           {options.map(option => (
             <SelectItem tabIndex='0' aria-selected={option === selectedOption ? 'true' : 'false'} onClick={onOptionClicked(option)} onKeyDown={onItemKeyDown} key={Math.random()}>
               {option}
