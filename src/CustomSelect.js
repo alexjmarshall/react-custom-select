@@ -7,29 +7,44 @@ const CustomSelectContainer = styled("div")`
   position: relative;
   display: inline-block;
   width: 8em;
+`;
+
+const SelectedItem = styled("button")`
+  width: inherit;
+  height: inherit;
+  padding: 0.2em;
+  display: inline-block;
   border: 1px solid black;
+  margin: 0;
+  text-decoration: none;
+  background: #ffffff;
+  font-family: sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 0;
+  text-align: left;
 `;
 
-const SelectedItem = styled("div")`
-  padding: 0 0.2em 0.2em 0.2em;
-`;
-
-const SelectItems = styled("div")`
+const SelectItems = styled("ul")`
+  margin: 0;
+  padding 0;
+  list-style: none;
   position: absolute;
   width: 8em;
   background: #ffffff;
   border: 1px solid black;
-  margin-left: -1px;
-  background-color: white;
+  border-top-width: 0;
+  box-sizing: border-box;
 `;
 
-const SelectItem = styled(SelectedItem)``;
+const SelectItem = styled("li")`
+  padding: 0.2em;
+`;
 
 const DownCaret = styled.img`
   height: 1em;
   position: absolute;
   right: 0.2rem;
-  margin-top: 0.2em;
 `;
 
 const UpCaret = styled(DownCaret)``;
@@ -51,8 +66,8 @@ function CustomSelect({options, uniqueId}) {
     // let otherItems = getElementSiblings(e.target);
     // otherItems.forEach(item => item.setAttribute('aria-selected', false));
     let selectedElm = e.target.parentElement.previousElementSibling;
-    selectedElm.setAttribute('aria-activedescendant', clickedItem.id);
-    selectedElm.focus();
+    // selectedElm.setAttribute('aria-activedescendant', clickedItem.id);
+    selectedElm.focus(); // TODO use refs to programmatically manage focus
   };
 
   const getElementSiblings = (elm) => {
@@ -123,9 +138,11 @@ function CustomSelect({options, uniqueId}) {
   }
 
   return (
+    <>
+    <span id={`custom-select-label-${uniqueId}`}>Choose a fruit: </span> {/* TODO style component? */}
     <CustomSelectContainer>
-      <label htmlFor={`selected_item_${uniqueId}`}>Choose a fruit:</label>
-      <SelectedItem id={`selected_item_${uniqueId}`} tabIndex='0' aria-expanded={isOpen ? true : false} onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}>
+      <SelectedItem id={`selected_item_${uniqueId}`} tabIndex='0' aria-expanded={isOpen ? true : false} onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}
+                    aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`} aria-haspopup='listbox'>
         {selectedOption}
         {isOpen ? (
           <UpCaret src='https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor' alt='up-caret'></UpCaret>
@@ -133,14 +150,15 @@ function CustomSelect({options, uniqueId}) {
           <DownCaret src='https://icongr.am/fontawesome/caret-down.svg?size=128&color=currentColor' alt='down-caret'></DownCaret>
         )}
       </SelectedItem>
-        <SelectItems role='listbox' style={{display: !isOpen && 'none'}}>
-          {options.map(option => (
-            <SelectItem tabIndex='0' aria-selected={option === selectedOption ? 'true' : 'false'} onClick={onOptionClicked(option)} onKeyDown={onItemKeyDown} key={Math.random()}>
+        <SelectItems role='listbox' aria-labelledby={`custom-select-label-${uniqueId}`} tabIndex='-1' style={{display: !isOpen && 'none'}}>
+          {options.map((option, index) => (
+            <SelectItem id={`select-item-${uniqueId % index}`} rol='option' tabIndex='0' aria-selected={option === selectedOption} onClick={onOptionClicked(option)} key={index} onKeyDown={onItemKeyDown}>
               {option}
             </SelectItem>
           ))}
         </SelectItems>
     </CustomSelectContainer>
+    </>
   );
 }
 
