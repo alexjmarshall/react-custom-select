@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, createRef } from 'react';
 import styled from 'styled-components';
 
 //TODO em vs. rem
@@ -53,23 +53,34 @@ const UpCaret = styled(DownCaret)``;
 function CustomSelect({options, uniqueId}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(options[0]);
-  const selectItemsRef = useRef(null);
+  const selectItemsRef = useRef();
+  const selectedItemRef = useRef();
+  const activeItem = useRef();
+  const itemRefs = useRef([]);
+  if (itemRefs.current.length !== options.length) {
+    itemRefs.current = Array(options.length).fill().map((_, i) => itemRefs.current[i] || createRef());
+  }
 
   useEffect(() => console.log(selectedOption),[selectedOption]);
+  useEffect(() => {
+    if(isOpen) {
+      console.log(itemRefs);
+      const activeItem = itemRefs.current.find(item => item.current.getAttribute('aria-selected') === 'true');
+      activeItem.current.focus();
+    }
+  },[isOpen])
 
-  const toggleIsOpen = () => setIsOpen(!isOpen);
+  const toggleIsOpen = () => {
+    setIsOpen(!isOpen);
+  }
 
   const onOptionClicked = value => e => {
     setSelectedOption(value);
     setIsOpen(false);
     console.log(selectItemsRef.current);
     let clickedItem = e.target;
-    // clickedItem.setAttribute('aria-selected', true); // TODO this is not persistent
-    // let otherItems = getElementSiblings(e.target);
-    // otherItems.forEach(item => item.setAttribute('aria-selected', false));
-    // let selectedElm = e.target.parentElement.previousElementSibling;
     selectItemsRef.current.setAttribute('aria-activedescendant', clickedItem.id);
-    // selectItemsRef.current.focus(); // TODO use refs to programmatically manage focus
+    selectedItemRef.current.focus();
   };
 
   const getElementSiblings = (elm) => {
@@ -122,8 +133,7 @@ function CustomSelect({options, uniqueId}) {
         break;
       case 'Escape':
         setIsOpen(false);
-        let selectedElm = e.target.parentElement.previousElementSibling; // TODO use Refs instead
-        selectedElm.focus();
+        selectedItemRef.current.focus();
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -144,7 +154,7 @@ function CustomSelect({options, uniqueId}) {
     <span id={`custom-select-label-${uniqueId}`}>Choose a fruit: </span> {/* TODO style component? */}
     <CustomSelectContainer>
       <SelectedItem id={`selected_item_${uniqueId}`} tabIndex='0' aria-expanded={isOpen ? true : false} onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}
-                    aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`} aria-haspopup='listbox'>
+                    aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`} aria-haspopup='listbox' ref={selectedItemRef}>
         {selectedOption}
         {isOpen ? (
           <UpCaret src='https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor' alt='up-caret'></UpCaret>
@@ -154,7 +164,7 @@ function CustomSelect({options, uniqueId}) {
       </SelectedItem>
         <SelectItems role='listbox' aria-labelledby={`custom-select-label-${uniqueId}`} tabIndex='-1' style={{display: !isOpen && 'none'}} ref={selectItemsRef}>
           {options.map((option, index) => (
-            <SelectItem id={`select-item-${uniqueId * (index + 1)}`} rol='option' tabIndex='0' aria-selected={option === selectedOption} onClick={onOptionClicked(option)} key={index} onKeyDown={onItemKeyDown}>
+            <SelectItem id={`select-item-${uniqueId * (index + 1)}`} ref={itemRefs.current[index]} rol='option' tabIndex='0' aria-selected={option === selectedOption} onClick={onOptionClicked(option)} key={index} onKeyDown={onItemKeyDown}>
               {option}
             </SelectItem>
           ))}
