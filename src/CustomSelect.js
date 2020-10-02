@@ -59,22 +59,21 @@ function CustomSelect({options, uniqueId}) {
   const selectItemsRef = useRef();
   const selectedItemRef = useRef();
   // let activeItemRef = useRef();
-  const itemRefs = useRef([]);
-  if (itemRefs.current.length !== options.length) {
-    itemRefs.current = Array(options.length).fill().map((_, i) => itemRefs.current[i] || createRef());
-  }
-  // useEffect(() => {
-  //   console.log(selectedOption)
-  //   const activeItemRef = itemRefs.current.find(item => item.current.getAttribute('aria-selected') === 'true');
-    
-  // },[selectedOption]);
+  let itemRefs = [];
+  // if (itemRefs.length !== options.length) {
+  //   itemRefs = Array(options.length).fill().map((_, i) => itemRefs[i] || createRef());
+  // }
+  useEffect(() => {
+    const activeItemRef = itemRefs.find(item => item.getAttribute('aria-selected') === 'true');
+    if(activeItemRef) var activeItemId = activeItemRef.id;
+    selectItemsRef.current.setAttribute('aria-activedescendant', activeItemId);
+  },[selectedOption]);
+
   useEffect(() => {
     if(isOpen) {
       //focus on selectItems, set aria-selected and activedescendant to selectedOption
-      const activeItemRef = itemRefs.current.find(item => item.current.getAttribute('aria-selected') === 'true');
-      console.log(activeItemRef);
-      // activeItemRef.current.setAttribute('aria-active', true);
-      selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef.current.id);
+      const activeItemRef = itemRefs.find(item => item.getAttribute('aria-selected') === 'true');
+      selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef.id);
       selectItemsRef.current.focus();
     }
   },[isOpen])
@@ -123,8 +122,8 @@ function CustomSelect({options, uniqueId}) {
   }
 
   const onSelectItemsKeyDown = (e) => { //TODO scroll if active option not visible
-    const activeItemRef = itemRefs.current.find(item => item.current.innerHTML === selectedOption);
-    const activeItemRefIndex = itemRefs.current.indexOf(activeItemRef);
+    const activeItemRefIndex = itemRefs.findIndex(item => item.innerHTML === selectedOption);
+    const activeItemRef = itemRefs[activeItemRefIndex];
     switch(e.key) {
       case 'Enter':
         e.preventDefault();
@@ -137,20 +136,36 @@ function CustomSelect({options, uniqueId}) {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        let prevItem = itemRefs.current[activeItemRefIndex - 1];
+        let prevItem = itemRefs[activeItemRefIndex - 1];
         if(prevItem) {
-          activeItemRef.current.setAttribute('aria-selected', false);
-          prevItem.current.setAttribute('aria-selected', true);
-          setSelectedOption(prevItem.current.innerHTML);
+          // activeItemRef.setAttribute('aria-selected', false);
+          // prevItem.setAttribute('aria-selected', true);
+          setSelectedOption(prevItem.innerHTML);
+          if (selectItemsRef.current.scrollHeight > selectItemsRef.current.clientHeight) { // TODO NOW HAVE TO MANAGE SCROLL POSITION WHEN OPEN HAHAHAH
+            if (prevItem.offsetTop < selectItemsRef.current.scrollTop) {
+              selectItemsRef.current.scrollTop = prevItem.offsetTop;
+            }
+          }
         }
         break;
       case 'ArrowDown':
         e.preventDefault();
-        let nextItem = itemRefs.current[activeItemRefIndex + 1];
+        console.log(e.target.clientHeight);
+        let nextItem = itemRefs[activeItemRefIndex + 1];
         if(nextItem) {
-          activeItemRef.current.setAttribute('aria-selected', false);
-          nextItem.current.setAttribute('aria-selected', true);
-          setSelectedOption(nextItem.current.innerHTML);
+          // activeItemRef.setAttribute('aria-selected', false);
+          // nextItem.setAttribute('aria-selected', true);
+          setSelectedOption(nextItem.innerHTML);
+          if (selectItemsRef.current.scrollHeight > selectItemsRef.current.clientHeight) { // TODO NOW HAVE TO MANAGE SCROLL POSITION WHEN OPEN HAHAHAH
+            let scrollBottom = selectItemsRef.current.clientHeight + selectItemsRef.current.scrollTop;
+            let elementBottom = nextItem.offsetTop + nextItem.offsetHeight;
+            if (elementBottom > scrollBottom) {
+              selectItemsRef.current.scrollTop = elementBottom - selectItemsRef.current.clientHeight;
+            }
+            // else if (element.offsetTop < this.listboxNode.scrollTop) {
+            //   this.listboxNode.scrollTop = element.offsetTop;
+            // }
+          }
         }
         break;
       default:
@@ -172,7 +187,7 @@ function CustomSelect({options, uniqueId}) {
       </SelectedItem>
         <SelectItems role='listbox' aria-labelledby={`custom-select-label-${uniqueId}`} tabIndex='-1' style={{display: !isOpen && 'none'}} ref={selectItemsRef} onKeyDown={onSelectItemsKeyDown}>
           {options.map((option, index) => (
-            <SelectItem id={`select-item-${uniqueId * (index + 1)}`} ref={itemRefs.current[index]} aria-selected={option === selectedOption} role='option' tabIndex='0' onClick={onOptionClicked(option)} key={index}>
+            <SelectItem id={`select-item-${uniqueId * (index + 1)}`} ref={ref => itemRefs[index] = ref} aria-selected={option === selectedOption} role='option' onClick={onOptionClicked(option)} key={index}>
               {option}
             </SelectItem>
           ))}
