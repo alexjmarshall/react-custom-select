@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, createRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 
 const CustomSelectContainer = styled("div")`
@@ -58,23 +58,19 @@ function CustomSelect({options, uniqueId}) {
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const selectItemsRef = useRef();
   const selectedItemRef = useRef();
-  // let activeItemRef = useRef();
-  let itemRefs = [];
-  // if (itemRefs.length !== options.length) {
-  //   itemRefs = Array(options.length).fill().map((_, i) => itemRefs[i] || createRef());
-  // }
+  const itemRefs = [];
+  const findActiveItem = useCallback(() => itemRefs.find(item => item.getAttribute('aria-selected') === 'true'),[itemRefs]);
+
   useEffect(() => {
-    const activeItemRef = itemRefs.find(item => item.getAttribute('aria-selected') === 'true');
-    if(activeItemRef) var activeItemId = activeItemRef.id;
-    selectItemsRef.current.setAttribute('aria-activedescendant', activeItemId);
+    let activeItemRef = findActiveItem();
+    activeItemRef && selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef.id);
   },[selectedOption]);
 
   useEffect(() => {
     if(isOpen) {
-      //focus on selectItems, set aria-selected and activedescendant to selectedOption
-      const activeItemRef = itemRefs.find(item => item.getAttribute('aria-selected') === 'true');
-      selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef.id);
       selectItemsRef.current.focus();
+      let activeItemRef = findActiveItem();
+      scrollToItem(activeItemRef);
     }
   },[isOpen])
 
@@ -84,15 +80,10 @@ function CustomSelect({options, uniqueId}) {
 
   const onOptionClicked = value => e => {
     setSelectedOption(value);
-    // let clickedItem = e.target;
-    // selectItemsRef.current.setAttribute('aria-activedescendant', clickedItem.id);
-    // selectedItemRef.current.focus();
   };
 
-  const selectedItemIndex = options.indexOf(selectedOption);
-
   const onSelectedKeyDown = e => {
-    const items = e.target.nextElementSibling.children;
+    const selectedIndex = options.indexOf(selectedOption);
 
     switch(e.key) {
       case 'Enter':
@@ -105,23 +96,33 @@ function CustomSelect({options, uniqueId}) {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        if(!isOpen && selectedItemIndex > 0)
-          items[selectedItemIndex - 1].click();
+        if(!isOpen && selectedIndex > 0)
+          setSelectedOption(options[selectedIndex - 1]);
         break;
       case 'ArrowDown':
         e.preventDefault();
-        if(isOpen) {
-          const firstItemElm = e.target.nextElementSibling.children[0]; // todo put this logic in JSX?
-          firstItemElm.focus();
-        }
-        else if(selectedItemIndex < options.length - 1)
-            items[selectedItemIndex + 1].click();
+        if(selectedIndex < options.length - 1)
+          setSelectedOption(options[selectedIndex + 1]);
         break;
       default:
     }
   }
 
-  const onSelectItemsKeyDown = (e) => { //TODO scroll if active option not visible
+  const scrollToItem = (item) => {
+    if (selectItemsRef.current.scrollHeight > selectItemsRef.current.clientHeight) {
+      let scrollBottom = selectItemsRef.current.clientHeight + selectItemsRef.current.scrollTop;
+      let elementBottom = item.offsetTop + item.offsetHeight;
+      if (elementBottom > scrollBottom) {
+        selectItemsRef.current.scrollTop = elementBottom - selectItemsRef.current.clientHeight;
+      } else if (selectItemsRef.current.scrollHeight > selectItemsRef.current.clientHeight) {
+        if (item.offsetTop < selectItemsRef.current.scrollTop) {
+          selectItemsRef.current.scrollTop = item.offsetTop;
+        }
+      }
+    }
+  }
+
+  const onSelectItemsKeyDown = (e) => {
     const activeItemRefIndex = itemRefs.findIndex(item => item.innerHTML === selectedOption);
     const activeItemRef = itemRefs[activeItemRefIndex];
     switch(e.key) {
@@ -141,11 +142,7 @@ function CustomSelect({options, uniqueId}) {
           // activeItemRef.setAttribute('aria-selected', false);
           // prevItem.setAttribute('aria-selected', true);
           setSelectedOption(prevItem.innerHTML);
-          if (selectItemsRef.current.scrollHeight > selectItemsRef.current.clientHeight) { // TODO NOW HAVE TO MANAGE SCROLL POSITION WHEN OPEN HAHAHAH
-            if (prevItem.offsetTop < selectItemsRef.current.scrollTop) {
-              selectItemsRef.current.scrollTop = prevItem.offsetTop;
-            }
-          }
+          scrollToItem(prevItem);
         }
         break;
       case 'ArrowDown':
@@ -156,16 +153,10 @@ function CustomSelect({options, uniqueId}) {
           // activeItemRef.setAttribute('aria-selected', false);
           // nextItem.setAttribute('aria-selected', true);
           setSelectedOption(nextItem.innerHTML);
-          if (selectItemsRef.current.scrollHeight > selectItemsRef.current.clientHeight) { // TODO NOW HAVE TO MANAGE SCROLL POSITION WHEN OPEN HAHAHAH
-            let scrollBottom = selectItemsRef.current.clientHeight + selectItemsRef.current.scrollTop;
-            let elementBottom = nextItem.offsetTop + nextItem.offsetHeight;
-            if (elementBottom > scrollBottom) {
-              selectItemsRef.current.scrollTop = elementBottom - selectItemsRef.current.clientHeight;
-            }
+          scrollToItem(nextItem);
             // else if (element.offsetTop < this.listboxNode.scrollTop) {
             //   this.listboxNode.scrollTop = element.offsetTop;
             // }
-          }
         }
         break;
       default:
