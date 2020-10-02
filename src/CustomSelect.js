@@ -84,7 +84,6 @@ function CustomSelect({options, uniqueId}) {
 
   const onSelectedKeyDown = e => {
     const selectedIndex = options.indexOf(selectedOption);
-
     switch(e.key) {
       case 'Enter':
       case ' ':
@@ -109,17 +108,14 @@ function CustomSelect({options, uniqueId}) {
   }
 
   const scrollToItem = (item) => {
-    if (selectItemsRef.current.scrollHeight > selectItemsRef.current.clientHeight) {
-      let scrollBottom = selectItemsRef.current.clientHeight + selectItemsRef.current.scrollTop;
-      let elementBottom = item.offsetTop + item.offsetHeight;
-      if (elementBottom > scrollBottom) {
-        selectItemsRef.current.scrollTop = elementBottom - selectItemsRef.current.clientHeight;
-      } else if (selectItemsRef.current.scrollHeight > selectItemsRef.current.clientHeight) {
-        if (item.offsetTop < selectItemsRef.current.scrollTop) {
-          selectItemsRef.current.scrollTop = item.offsetTop;
-        }
-      }
-    }
+    if (selectItemsRef.current.scrollHeight <= selectItemsRef.current.clientHeight)
+      return;
+    let scrollBottom = selectItemsRef.current.clientHeight + selectItemsRef.current.scrollTop;
+    let elementBottom = item.offsetTop + item.offsetHeight;
+    if (elementBottom > scrollBottom)
+      selectItemsRef.current.scrollTop = elementBottom - selectItemsRef.current.clientHeight;
+    else if (item.offsetTop < selectItemsRef.current.scrollTop)
+      selectItemsRef.current.scrollTop = item.offsetTop;
   }
 
   const onSelectItemsKeyDown = (e) => {
@@ -139,8 +135,6 @@ function CustomSelect({options, uniqueId}) {
         e.preventDefault();
         let prevItem = itemRefs[activeItemRefIndex - 1];
         if(prevItem) {
-          // activeItemRef.setAttribute('aria-selected', false);
-          // prevItem.setAttribute('aria-selected', true);
           setSelectedOption(prevItem.innerHTML);
           scrollToItem(prevItem);
         }
@@ -150,13 +144,8 @@ function CustomSelect({options, uniqueId}) {
         console.log(e.target.clientHeight);
         let nextItem = itemRefs[activeItemRefIndex + 1];
         if(nextItem) {
-          // activeItemRef.setAttribute('aria-selected', false);
-          // nextItem.setAttribute('aria-selected', true);
           setSelectedOption(nextItem.innerHTML);
           scrollToItem(nextItem);
-            // else if (element.offsetTop < this.listboxNode.scrollTop) {
-            //   this.listboxNode.scrollTop = element.offsetTop;
-            // }
         }
         break;
       default:
