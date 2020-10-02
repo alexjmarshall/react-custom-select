@@ -1,15 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 
-const CustomSelectContainer = styled("div")`
+const Container = styled("div")`
   position: relative;
   display: inline-block;
-  width: 8em;
 `;
 
 const SelectedItem = styled("button")`
-  width: inherit;
-  height: inherit;
   padding: 0.2em;
   display: inline-block;
   border: 1px solid black;
@@ -30,7 +27,6 @@ const SelectItems = styled("ul")`
   overflow: auto;
   list-style: none;
   position: absolute;
-  width: 8em;
   background: #ffffff;
   border: 1px solid black;
   border-top-width: 0;
@@ -59,12 +55,18 @@ function CustomSelect({options, uniqueId, label}) {
   const selectItemsRef = useRef();
   const selectedItemRef = useRef();
   const itemRefs = [];
-  const findActiveItem = () => itemRefs.find(item => item.getAttribute('aria-selected') === 'true');
+  const findActiveItem = () => itemRefs.find(item => item.getAttribute('aria-selected') === 'true')
+
+  useEffect(() => {
+    selectItemsRef.current.style.display = '';
+    selectedItemRef.current.style.width = `${selectItemsRef.current.offsetWidth}px`;
+    selectItemsRef.current.style.display = 'none';
+  },[])
 
   useEffect(() => {
     let activeItemRef = findActiveItem();
     activeItemRef && selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef.id);
-  },[selectedOption]);
+  },[selectedOption])
 
   useEffect(() => {
     if(isOpen) {
@@ -80,7 +82,8 @@ function CustomSelect({options, uniqueId, label}) {
 
   const onOptionClicked = value => e => {
     setSelectedOption(value);
-  };
+    scrollToItem(e.target);
+  }
 
   const onSelectedKeyDown = e => {
     const selectedIndex = options.indexOf(selectedOption);
@@ -154,7 +157,7 @@ function CustomSelect({options, uniqueId, label}) {
   return (
     <>
     <span id={`custom-select-label-${uniqueId}`}>{label}</span>
-    <CustomSelectContainer>
+    <Container>
       <SelectedItem id={`selected_item_${uniqueId}`}
                     tabIndex='0'
                     onClick={toggleIsOpen}
@@ -187,7 +190,7 @@ function CustomSelect({options, uniqueId, label}) {
           </SelectItem>
         ))}
       </SelectItems>
-    </CustomSelectContainer>
+    </Container>
     </>
   )
 }
