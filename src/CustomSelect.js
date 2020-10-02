@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 
 const CustomSelectContainer = styled("div")`
@@ -45,7 +45,7 @@ const SelectItem = styled("li")`
   }
 `;
 
-const DownCaret = styled.img`
+const DownCaret = styled.span`
   height: 1em;
   position: absolute;
   right: 0.2em;
@@ -53,13 +53,13 @@ const DownCaret = styled.img`
 
 const UpCaret = styled(DownCaret)``;
 
-function CustomSelect({options, uniqueId}) {
+function CustomSelect({options, uniqueId, label}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const selectItemsRef = useRef();
   const selectedItemRef = useRef();
   const itemRefs = [];
-  const findActiveItem = useCallback(() => itemRefs.find(item => item.getAttribute('aria-selected') === 'true'),[itemRefs]);
+  const findActiveItem = () => itemRefs.find(item => item.getAttribute('aria-selected') === 'true');
 
   useEffect(() => {
     let activeItemRef = findActiveItem();
@@ -141,7 +141,6 @@ function CustomSelect({options, uniqueId}) {
         break;
       case 'ArrowDown':
         e.preventDefault();
-        console.log(e.target.clientHeight);
         let nextItem = itemRefs[activeItemRefIndex + 1];
         if(nextItem) {
           setSelectedOption(nextItem.innerHTML);
@@ -154,27 +153,43 @@ function CustomSelect({options, uniqueId}) {
 
   return (
     <>
-    <span id={`custom-select-label-${uniqueId}`}>Choose a fruit: </span> {/* TODO style component? */}
+    <span id={`custom-select-label-${uniqueId}`}>{label}</span>
     <CustomSelectContainer>
-      <SelectedItem id={`selected_item_${uniqueId}`} tabIndex='0' aria-expanded={isOpen ? true : false} onClick={toggleIsOpen} onKeyDown={onSelectedKeyDown}
-                    aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`} aria-haspopup='listbox' ref={selectedItemRef}>
+      <SelectedItem id={`selected_item_${uniqueId}`}
+                    tabIndex='0'
+                    onClick={toggleIsOpen}
+                    onKeyDown={onSelectedKeyDown}
+                    aria-expanded={isOpen ? true : false}
+                    aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`}
+                    aria-haspopup='listbox'
+                    ref={selectedItemRef}>
         {selectedOption}
         {isOpen ? (
-          <UpCaret src='https://icongr.am/fontawesome/caret-up.svg?size=128&color=currentColor' alt='up-caret'></UpCaret>
+          <UpCaret>&#9650;</UpCaret>
         ) : (
-          <DownCaret src='https://icongr.am/fontawesome/caret-down.svg?size=128&color=currentColor' alt='down-caret'></DownCaret>
+          <DownCaret>&#9660;</DownCaret>
         )}
       </SelectedItem>
-        <SelectItems role='listbox' aria-labelledby={`custom-select-label-${uniqueId}`} tabIndex='-1' style={{display: !isOpen && 'none'}} ref={selectItemsRef} onKeyDown={onSelectItemsKeyDown}>
-          {options.map((option, index) => (
-            <SelectItem id={`select-item-${uniqueId * (index + 1)}`} ref={ref => itemRefs[index] = ref} aria-selected={option === selectedOption} role='option' onClick={onOptionClicked(option)} key={index}>
-              {option}
-            </SelectItem>
-          ))}
-        </SelectItems>
+      <SelectItems role='listbox'
+                    aria-labelledby={`custom-select-label-${uniqueId}`}
+                    tabIndex='-1'
+                    style={{display: !isOpen && 'none'}}
+                    onKeyDown={onSelectItemsKeyDown}
+                    ref={selectItemsRef}>
+        {options.map((option, index) => (
+          <SelectItem id={`select-item-${uniqueId}${index}`}
+                      role='option'
+                      onClick={onOptionClicked(option)}
+                      key={index}
+                      aria-selected={option === selectedOption}
+                      ref={ref => itemRefs[index] = ref}>
+            {option}
+          </SelectItem>
+        ))}
+      </SelectItems>
     </CustomSelectContainer>
     </>
-  );
+  )
 }
 
 export default CustomSelect;
