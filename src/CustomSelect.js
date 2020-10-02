@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef, createRef } from 'react';
 import styled from 'styled-components';
 
-//TODO em vs. rem
-
 const CustomSelectContainer = styled("div")`
   position: relative;
   display: inline-block;
@@ -28,6 +26,8 @@ const SelectedItem = styled("button")`
 const SelectItems = styled("ul")`
   margin: 0;
   padding 0;
+  height: 7em;
+  overflow: auto;
   list-style: none;
   position: absolute;
   width: 8em;
@@ -40,6 +40,9 @@ const SelectItems = styled("ul")`
 const SelectItem = styled("li")`
   padding: 0.2em;
   cursor: pointer;
+  &[aria-selected="true"] {
+    background-color: #b0f2ff;
+  }
 `;
 
 const DownCaret = styled.img`
@@ -55,18 +58,24 @@ function CustomSelect({options, uniqueId}) {
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const selectItemsRef = useRef();
   const selectedItemRef = useRef();
-  const activeItem = useRef();
+  // let activeItemRef = useRef();
   const itemRefs = useRef([]);
   if (itemRefs.current.length !== options.length) {
     itemRefs.current = Array(options.length).fill().map((_, i) => itemRefs.current[i] || createRef());
   }
-
-  useEffect(() => console.log(selectedOption),[selectedOption]);
+  // useEffect(() => {
+  //   console.log(selectedOption)
+  //   const activeItemRef = itemRefs.current.find(item => item.current.getAttribute('aria-selected') === 'true');
+    
+  // },[selectedOption]);
   useEffect(() => {
     if(isOpen) {
-      console.log(itemRefs);
-      const activeItem = itemRefs.current.find(item => item.current.getAttribute('aria-selected') === 'true');
-      activeItem.current.focus();
+      //focus on selectItems, set aria-selected and activedescendant to selectedOption
+      const activeItemRef = itemRefs.current.find(item => item.current.getAttribute('aria-selected') === 'true');
+      console.log(activeItemRef);
+      // activeItemRef.current.setAttribute('aria-active', true);
+      selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef.current.id);
+      selectItemsRef.current.focus();
     }
   },[isOpen])
 
@@ -76,22 +85,10 @@ function CustomSelect({options, uniqueId}) {
 
   const onOptionClicked = value => e => {
     setSelectedOption(value);
-    setIsOpen(false);
-    console.log(selectItemsRef.current);
-    let clickedItem = e.target;
-    selectItemsRef.current.setAttribute('aria-activedescendant', clickedItem.id);
-    selectedItemRef.current.focus();
+    // let clickedItem = e.target;
+    // selectItemsRef.current.setAttribute('aria-activedescendant', clickedItem.id);
+    // selectedItemRef.current.focus();
   };
-
-  const getElementSiblings = (elm) => {
-    let sibs = [];
-    let sib = elm.parentElement.firstChild;
-    while(sib) {
-      sib !== elm && sibs.push(sib);
-      sib = sib.nextElementSibling;
-    }
-    return sibs;
-  }
 
   const selectedItemIndex = options.indexOf(selectedOption);
 
@@ -125,11 +122,14 @@ function CustomSelect({options, uniqueId}) {
     }
   }
 
-  const onItemKeyDown = (e) => {
+  const onSelectItemsKeyDown = (e) => { //TODO scroll if active option not visible
+    const activeItemRef = itemRefs.current.find(item => item.current.innerHTML === selectedOption);
+    const activeItemRefIndex = itemRefs.current.indexOf(activeItemRef);
     switch(e.key) {
       case 'Enter':
         e.preventDefault();
-        e.target.click();
+        activeItemRef.current.click();
+        toggleIsOpen();
         break;
       case 'Escape':
         setIsOpen(false);
@@ -137,13 +137,21 @@ function CustomSelect({options, uniqueId}) {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        let prevItem = e.target.previousElementSibling;
-        prevItem && prevItem.focus();
+        let prevItem = itemRefs.current[activeItemRefIndex - 1];
+        if(prevItem) {
+          activeItemRef.current.setAttribute('aria-selected', false);
+          prevItem.current.setAttribute('aria-selected', true);
+          setSelectedOption(prevItem.current.innerHTML);
+        }
         break;
       case 'ArrowDown':
         e.preventDefault();
-        let nextItem = e.target.nextElementSibling;
-        nextItem && nextItem.focus();
+        let nextItem = itemRefs.current[activeItemRefIndex + 1];
+        if(nextItem) {
+          activeItemRef.current.setAttribute('aria-selected', false);
+          nextItem.current.setAttribute('aria-selected', true);
+          setSelectedOption(nextItem.current.innerHTML);
+        }
         break;
       default:
     }
@@ -162,9 +170,9 @@ function CustomSelect({options, uniqueId}) {
           <DownCaret src='https://icongr.am/fontawesome/caret-down.svg?size=128&color=currentColor' alt='down-caret'></DownCaret>
         )}
       </SelectedItem>
-        <SelectItems role='listbox' aria-labelledby={`custom-select-label-${uniqueId}`} tabIndex='-1' style={{display: !isOpen && 'none'}} ref={selectItemsRef}>
+        <SelectItems role='listbox' aria-labelledby={`custom-select-label-${uniqueId}`} tabIndex='-1' style={{display: !isOpen && 'none'}} ref={selectItemsRef} onKeyDown={onSelectItemsKeyDown}>
           {options.map((option, index) => (
-            <SelectItem id={`select-item-${uniqueId * (index + 1)}`} ref={itemRefs.current[index]} rol='option' tabIndex='0' aria-selected={option === selectedOption} onClick={onOptionClicked(option)} key={index} onKeyDown={onItemKeyDown}>
+            <SelectItem id={`select-item-${uniqueId * (index + 1)}`} ref={itemRefs.current[index]} aria-selected={option === selectedOption} role='option' tabIndex='0' onClick={onOptionClicked(option)} key={index}>
               {option}
             </SelectItem>
           ))}
