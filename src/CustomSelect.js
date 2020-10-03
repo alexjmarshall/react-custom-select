@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 
-//TODO use ? before dot
-
 const Container = styled("div")`
   position: relative;
   display: inline-block;
@@ -72,7 +70,7 @@ function CustomSelect({options, uniqueId, label}) {
   },[selectedOption])
 
   useEffect(() => {
-    function handleMouseDown(e) {
+    const handleMouseDown = e => {
       if (!(containerRef.current.contains(e.target)))
         setIsOpen(false);
     }
@@ -121,7 +119,7 @@ function CustomSelect({options, uniqueId, label}) {
     }
   }
 
-  const scrollToItem = (item) => {
+  const scrollToItem = item => {
     if (selectItemsRef.current.scrollHeight <= selectItemsRef.current.clientHeight)
       return;
     let scrollBottom = selectItemsRef.current.clientHeight + selectItemsRef.current.scrollTop;
@@ -132,7 +130,7 @@ function CustomSelect({options, uniqueId, label}) {
       selectItemsRef.current.scrollTop = item.offsetTop;
   }
 
-  const onSelectItemsKeyDown = (e) => {
+  const onSelectItemsKeyDown = e => {
     const activeItemRefIndex = itemRefs.findIndex(item => item.innerHTML === selectedOption);
     const activeItemRef = itemRefs[activeItemRefIndex];
     switch(e.key) {
