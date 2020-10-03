@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 
+//TODO use ? before dot
+
 const Container = styled("div")`
   position: relative;
   display: inline-block;
@@ -52,6 +54,7 @@ const UpCaret = styled(DownCaret)``;
 function CustomSelect({options, uniqueId, label}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(options[0]);
+  const containerRef = useRef();
   const selectItemsRef = useRef();
   const selectedItemRef = useRef();
   const itemRefs = [];
@@ -69,11 +72,19 @@ function CustomSelect({options, uniqueId, label}) {
   },[selectedOption])
 
   useEffect(() => {
+    function handleMouseDown(e) {
+      if (!(containerRef.current.contains(e.target)))
+        setIsOpen(false);
+    }
     if(isOpen) {
       selectItemsRef.current.focus();
       let activeItemRef = findActiveItem();
       scrollToItem(activeItemRef);
+      window.addEventListener("mousedown", handleMouseDown);
     }
+    return () => {
+      window.removeEventListener("mousedown", handleMouseDown);
+    };
   },[isOpen])
 
   const toggleIsOpen = () => {
@@ -157,7 +168,7 @@ function CustomSelect({options, uniqueId, label}) {
   return (
     <>
     <span id={`custom-select-label-${uniqueId}`}>{label}</span>
-    <Container>
+    <Container ref={containerRef}>
       <SelectedItem id={`selected_item_${uniqueId}`}
                     tabIndex='0'
                     onClick={toggleIsOpen}
