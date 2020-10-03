@@ -135,11 +135,8 @@ function CustomSelect({options, uniqueId, label}) {
     const activeItemRef = itemRefs[activeItemRefIndex];
     switch(e.key) {
       case 'Enter':
-        e.preventDefault();
-        activeItemRef.current.click();
-        toggleIsOpen();
-        break;
       case 'Escape':
+        e.preventDefault();
         setIsOpen(false);
         selectedItemRef.current.focus();
         break;
