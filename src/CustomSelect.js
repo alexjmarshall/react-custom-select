@@ -132,7 +132,6 @@ function CustomSelect({options, uniqueId, label}) {
 
   const onSelectItemsKeyDown = e => {
     const activeItemRefIndex = itemRefs.findIndex(item => item.innerHTML === selectedOption);
-    const activeItemRef = itemRefs[activeItemRefIndex];
     switch(e.key) {
       case 'Enter':
       case 'Escape':
