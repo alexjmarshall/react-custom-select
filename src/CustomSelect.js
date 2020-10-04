@@ -58,6 +58,7 @@ function CustomSelect({options, uniqueId, label}) {
   const itemRefs = [];
   const findActiveItem = () => itemRefs.find(item => item.getAttribute('aria-selected') === 'true')
 
+  //set button width equal to listbox width
   useEffect(() => {
     selectItemsRef.current.style.display = '';
     selectedItemRef.current.style.width = `${selectItemsRef.current.offsetWidth}px`;
@@ -132,7 +133,6 @@ function CustomSelect({options, uniqueId, label}) {
 
   const onSelectItemsKeyDown = e => {
     const activeItemRefIndex = itemRefs.findIndex(item => item.innerHTML === selectedOption);
-    const activeItemRef = itemRefs[activeItemRefIndex];
     switch(e.key) {
       case 'Enter':
       case 'Escape':
@@ -180,11 +180,11 @@ function CustomSelect({options, uniqueId, label}) {
         )}
       </SelectedItem>
       <SelectItems role='listbox'
-                    aria-labelledby={`custom-select-label-${uniqueId}`}
-                    tabIndex='-1'
-                    style={{display: !isOpen && 'none'}}
-                    onKeyDown={onSelectItemsKeyDown}
-                    ref={selectItemsRef}>
+                   aria-labelledby={`custom-select-label-${uniqueId}`}
+                   tabIndex='-1'
+                   style={{display: !isOpen && 'none'}}
+                   onKeyDown={onSelectItemsKeyDown}
+                   ref={selectItemsRef}>
         {options.map((option, index) => (
           <SelectItem id={`select-item-${uniqueId}${index}`}
                       role='option'
