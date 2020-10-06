@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 
 const Container = styled("div")`
@@ -56,19 +56,19 @@ function CustomSelect({options, uniqueId, label}) {
   const selectItemsRef = useRef();
   const selectedItemRef = useRef();
   const itemRefs = [];
-  const findActiveItem = () => itemRefs.find(item => item.getAttribute('aria-selected') === 'true')
+  const findActiveItem = useCallback(() => itemRefs.find(item => item.getAttribute('aria-selected') === 'true'),[itemRefs]);
 
   //set button width equal to listbox width
   useEffect(() => {
     selectItemsRef.current.style.display = '';
     selectedItemRef.current.style.width = `${selectItemsRef.current.offsetWidth}px`;
     selectItemsRef.current.style.display = 'none';
-  },[])
+  },[selectItemsRef])
 
   useEffect(() => {
     let activeItemRef = findActiveItem();
     activeItemRef && selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef.id);
-  },[selectedOption])
+  },[selectedOption, findActiveItem])
 
   useEffect(() => {
     const handleMouseDown = e => {
@@ -76,15 +76,20 @@ function CustomSelect({options, uniqueId, label}) {
         setIsOpen(false);
     }
     if(isOpen) {
-      selectItemsRef.current.focus();
-      let activeItemRef = findActiveItem();
-      scrollToItem(activeItemRef);
       window.addEventListener("mousedown", handleMouseDown);
     }
     return () => {
       window.removeEventListener("mousedown", handleMouseDown);
     };
   },[isOpen])
+
+  useEffect(() => {
+    if(isOpen) {
+      selectItemsRef.current.focus();
+      let activeItemRef = findActiveItem();
+      scrollToItem(activeItemRef);
+    }
+  },[isOpen, findActiveItem])
 
   const toggleIsOpen = () => {
     setIsOpen(!isOpen);
