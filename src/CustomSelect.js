@@ -100,31 +100,6 @@ function CustomSelect({options, uniqueId, label}) {
     scrollToItem(e.target);
   }
 
-  const onSelectedKeyDown = e => {
-    const selectedIndex = options.indexOf(selectedOption);
-    switch(e.key) {
-      case 'Enter':
-      case ' ':
-        e.preventDefault();
-        toggleIsOpen();
-        break;
-      case 'Escape':
-        setIsOpen(false);
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        if(!isOpen && selectedIndex > 0)
-          setSelectedOption(options[selectedIndex - 1]);
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        if(selectedIndex < options.length - 1)
-          setSelectedOption(options[selectedIndex + 1]);
-        break;
-      default:
-    }
-  }
-
   const scrollToItem = item => {
     if (selectItemsRef.current.scrollHeight <= selectItemsRef.current.clientHeight)
       return;
@@ -136,13 +111,16 @@ function CustomSelect({options, uniqueId, label}) {
       selectItemsRef.current.scrollTop = item.offsetTop;
   }
 
-  const onSelectItemsKeyDown = e => {
+  const onSelectKeyDown = e => { //TODO refactor to map
     const activeItemRefIndex = itemRefs.findIndex(item => item.innerHTML === selectedOption);
     switch(e.key) {
-      case 'Enter':
       case 'Escape':
-        e.preventDefault();
         setIsOpen(false);
+        selectedItemRef.current.focus();
+        break;
+      case 'Enter':
+        e.preventDefault();
+        toggleIsOpen();
         selectedItemRef.current.focus();
         break;
       case 'ArrowUp':
@@ -172,7 +150,7 @@ function CustomSelect({options, uniqueId, label}) {
       <SelectedItem id={`selected_item_${uniqueId}`}
                     tabIndex='0'
                     onClick={toggleIsOpen}
-                    onKeyDown={onSelectedKeyDown}
+                    onKeyDown={onSelectKeyDown}
                     aria-expanded={isOpen ? true : false}
                     aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`}
                     aria-haspopup='listbox'
@@ -188,7 +166,7 @@ function CustomSelect({options, uniqueId, label}) {
                    aria-labelledby={`custom-select-label-${uniqueId}`}
                    tabIndex='-1'
                    style={{display: !isOpen && 'none'}}
-                   onKeyDown={onSelectItemsKeyDown}
+                   onKeyDown={onSelectKeyDown}
                    ref={selectItemsRef}>
         {options.map((option, index) => (
           <SelectItem id={`select-item-${uniqueId}${index}`}
