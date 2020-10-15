@@ -56,7 +56,14 @@ function CustomSelect({options, uniqueId, label}) {
   const selectItemsRef = useRef();
   const selectedItemRef = useRef();
   const itemRefs = [];
-  const findActiveItem = useCallback(() => itemRefs.find(item => item.getAttribute('aria-selected') === 'true'),[itemRefs]);
+  const activeItemRef = useCallback(() => 
+    itemRefs.find(item => item.innerHTML === selectedOption), 
+    [itemRefs, selectedOption]
+  );
+  const activeItemRefIndex = useCallback(() => 
+    itemRefs.findIndex(item => item.innerHTML === selectedOption), 
+    [itemRefs, selectedOption]
+  );
 
   //set button width equal to listbox width
   useEffect(() => {
@@ -66,9 +73,8 @@ function CustomSelect({options, uniqueId, label}) {
   },[selectItemsRef])
 
   useEffect(() => {
-    let activeItemRef = findActiveItem();
-    activeItemRef && selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef.id);
-  },[selectedOption, findActiveItem])
+    selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef?.id);
+  },[selectedOption, activeItemRef])
 
   useEffect(() => {
     const handleMouseDown = e => {
@@ -86,10 +92,9 @@ function CustomSelect({options, uniqueId, label}) {
   useEffect(() => {
     if(isOpen) {
       selectItemsRef.current.focus();
-      let activeItemRef = findActiveItem();
-      scrollToItem(activeItemRef);
+      scrollToItem(activeItemRef());
     }
-  },[isOpen, findActiveItem])
+  },[isOpen, activeItemRef])
 
   const toggleIsOpen = () => {
     setIsOpen(!isOpen);
@@ -111,8 +116,7 @@ function CustomSelect({options, uniqueId, label}) {
       selectItemsRef.current.scrollTop = item.offsetTop;
   }
 
-  const onSelectKeyDown = e => { //TODO refactor to map
-    const activeItemRefIndex = itemRefs.findIndex(item => item.innerHTML === selectedOption);
+  const onSelectKeyDown = e => { //TODO refactor to map and style={{display: !isOpen && 'none'}} on SelectItems needed?
     switch(e.key) {
       case 'Escape':
         setIsOpen(false);
@@ -125,7 +129,7 @@ function CustomSelect({options, uniqueId, label}) {
         break;
       case 'ArrowUp':
         e.preventDefault();
-        let prevItem = itemRefs[activeItemRefIndex - 1];
+        let prevItem = itemRefs[activeItemRefIndex() - 1];
         if(prevItem) {
           setSelectedOption(prevItem.innerHTML);
           scrollToItem(prevItem);
@@ -133,7 +137,7 @@ function CustomSelect({options, uniqueId, label}) {
         break;
       case 'ArrowDown':
         e.preventDefault();
-        let nextItem = itemRefs[activeItemRefIndex + 1];
+        let nextItem = itemRefs[activeItemRefIndex() + 1];
         if(nextItem) {
           setSelectedOption(nextItem.innerHTML);
           scrollToItem(nextItem);
