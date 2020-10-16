@@ -65,17 +65,19 @@ function CustomSelect({options, uniqueId, label}) {
     [itemRefs, selectedOption]
   );
 
-  //set button width equal to listbox width
+  //set dropdown button width equal to width of listbox underneath
   useEffect(() => {
     selectItemsRef.current.style.display = '';
     selectedItemRef.current.style.width = `${selectItemsRef.current.offsetWidth}px`;
     selectItemsRef.current.style.display = 'none';
   },[selectItemsRef])
 
+  //set aria-activedescendant of listbox to currently selected item
   useEffect(() => {
     selectItemsRef.current.setAttribute('aria-activedescendant', activeItemRef?.id);
   },[selectedOption, activeItemRef])
 
+  //close listbox on click outside of component
   useEffect(() => {
     const handleMouseDown = e => {
       if (!(containerRef.current.contains(e.target)))
@@ -89,6 +91,7 @@ function CustomSelect({options, uniqueId, label}) {
     };
   },[isOpen])
 
+  //when listbox is open, focus on it and scroll to active item
   useEffect(() => {
     if(isOpen) {
       selectItemsRef.current.focus();
@@ -145,17 +148,19 @@ function CustomSelect({options, uniqueId, label}) {
     }
   }
 
-  const keyListenerMap = new Map([
-    ['Escape', handleEscape],
-    ['Enter', handleEnter],
-    ['ArrowUp', handleArrowUp],
-    ['ArrowDown', handleArrowDown]
-  ])
-
-  const onSelectKeyDown = e => { //style={{display: !isOpen && 'none'}} on SelectItems needed? remove semicolons after function declarations
-    let handler = keyListenerMap.get(e.key);
-    handler && handler(e);
-  }
+  //keydown event listener for dropdown button and listbox
+  const onSelectKeyDown = (() => {
+    const keyListenerMap = new Map([
+      ['Escape', handleEscape],
+      ['Enter', handleEnter],
+      ['ArrowUp', handleArrowUp],
+      ['ArrowDown', handleArrowDown]
+    ])
+    return e => {
+      let handler = keyListenerMap.get(e.key);
+      return handler && handler(e);
+    }
+  })();
 
   return (
     <>
