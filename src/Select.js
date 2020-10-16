@@ -49,7 +49,7 @@ const DownCaret = styled.span`
 
 const UpCaret = styled(DownCaret)``;
 
-function CustomSelect({options, uniqueId, label}) {
+function Select({options, uniqueId, label}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState(options[0]);
   const containerRef = useRef();
@@ -164,14 +164,14 @@ function CustomSelect({options, uniqueId, label}) {
 
   return (
     <>
-      <span id={`custom-select-label-${uniqueId}`}>{label}</span>
+      <span id={`select-label-${uniqueId}`}>{label}</span>
       <Container ref={containerRef}>
         <SelectedItem id={`selected_item_${uniqueId}`}
                       tabIndex='0'
                       onClick={toggleIsOpen}
                       onKeyDown={onSelectKeyDown}
                       aria-expanded={isOpen ? true : false}
-                      aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`}
+                      aria-labelledby={`select-label-${uniqueId} selected_item_${uniqueId}`}
                       aria-haspopup='listbox'
                       ref={selectedItemRef}>
           {selectedOption}
@@ -182,7 +182,7 @@ function CustomSelect({options, uniqueId, label}) {
           )}
         </SelectedItem>
         <SelectItems role='listbox'
-                    aria-labelledby={`custom-select-label-${uniqueId}`}
+                    aria-labelledby={`select-label-${uniqueId}`}
                     tabIndex='-1'
                     style={{display: !isOpen && 'none'}}
                     onKeyDown={onSelectKeyDown}
@@ -203,4 +203,4 @@ function CustomSelect({options, uniqueId, label}) {
   )
 }
 
-export default CustomSelect;
+export default Select;
