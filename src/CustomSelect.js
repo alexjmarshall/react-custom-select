@@ -116,74 +116,84 @@ function CustomSelect({options, uniqueId, label}) {
       selectItemsRef.current.scrollTop = item.offsetTop;
   }
 
-  const onSelectKeyDown = e => { //TODO refactor to map and style={{display: !isOpen && 'none'}} on SelectItems needed?
-    switch(e.key) {
-      case 'Escape':
-        setIsOpen(false);
-        selectedItemRef.current.focus();
-        break;
-      case 'Enter':
-        e.preventDefault();
-        toggleIsOpen();
-        selectedItemRef.current.focus();
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        let prevItem = itemRefs[activeItemRefIndex() - 1];
-        if(prevItem) {
-          setSelectedOption(prevItem.innerHTML);
-          scrollToItem(prevItem);
-        }
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        let nextItem = itemRefs[activeItemRefIndex() + 1];
-        if(nextItem) {
-          setSelectedOption(nextItem.innerHTML);
-          scrollToItem(nextItem);
-        }
-        break;
-      default:
+  const handleEscape = e => {
+    setIsOpen(false);
+    selectedItemRef.current.focus();
+  }
+
+  const handleEnter = e => {
+    e.preventDefault();
+    toggleIsOpen();
+    selectedItemRef.current.focus();
+  }
+
+  const handleArrowUp = e => {
+    e.preventDefault();
+    let prevItem = itemRefs[activeItemRefIndex() - 1];
+    if(prevItem) {
+      setSelectedOption(prevItem.innerHTML);
+      scrollToItem(prevItem);
     }
+  }
+
+  const handleArrowDown = e => {
+    e.preventDefault();
+    let nextItem = itemRefs[activeItemRefIndex() + 1];
+    if(nextItem) {
+      setSelectedOption(nextItem.innerHTML);
+      scrollToItem(nextItem);
+    }
+  }
+
+  const keyListenerMap = new Map([
+    ['Escape', handleEscape],
+    ['Enter', handleEnter],
+    ['ArrowUp', handleArrowUp],
+    ['ArrowDown', handleArrowDown]
+  ])
+
+  const onSelectKeyDown = e => { //style={{display: !isOpen && 'none'}} on SelectItems needed? remove semicolons after function declarations
+    let handler = keyListenerMap.get(e.key);
+    handler && handler(e);
   }
 
   return (
     <>
-    <span id={`custom-select-label-${uniqueId}`}>{label}</span>
-    <Container ref={containerRef}>
-      <SelectedItem id={`selected_item_${uniqueId}`}
-                    tabIndex='0'
-                    onClick={toggleIsOpen}
+      <span id={`custom-select-label-${uniqueId}`}>{label}</span>
+      <Container ref={containerRef}>
+        <SelectedItem id={`selected_item_${uniqueId}`}
+                      tabIndex='0'
+                      onClick={toggleIsOpen}
+                      onKeyDown={onSelectKeyDown}
+                      aria-expanded={isOpen ? true : false}
+                      aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`}
+                      aria-haspopup='listbox'
+                      ref={selectedItemRef}>
+          {selectedOption}
+          {isOpen ? (
+            <UpCaret>&#9650;</UpCaret>
+          ) : (
+            <DownCaret>&#9660;</DownCaret>
+          )}
+        </SelectedItem>
+        <SelectItems role='listbox'
+                    aria-labelledby={`custom-select-label-${uniqueId}`}
+                    tabIndex='-1'
+                    style={{display: !isOpen && 'none'}}
                     onKeyDown={onSelectKeyDown}
-                    aria-expanded={isOpen ? true : false}
-                    aria-labelledby={`custom-select-label-${uniqueId} selected_item_${uniqueId}`}
-                    aria-haspopup='listbox'
-                    ref={selectedItemRef}>
-        {selectedOption}
-        {isOpen ? (
-          <UpCaret>&#9650;</UpCaret>
-        ) : (
-          <DownCaret>&#9660;</DownCaret>
-        )}
-      </SelectedItem>
-      <SelectItems role='listbox'
-                   aria-labelledby={`custom-select-label-${uniqueId}`}
-                   tabIndex='-1'
-                   style={{display: !isOpen && 'none'}}
-                   onKeyDown={onSelectKeyDown}
-                   ref={selectItemsRef}>
-        {options.map((option, index) => (
-          <SelectItem id={`select-item-${uniqueId}${index}`}
-                      role='option'
-                      onClick={onOptionClicked(option)}
-                      key={index}
-                      aria-selected={option === selectedOption}
-                      ref={ref => itemRefs[index] = ref}>
-            {option}
-          </SelectItem>
-        ))}
-      </SelectItems>
-    </Container>
+                    ref={selectItemsRef}>
+          {options.map((option, index) => (
+            <SelectItem id={`select-item-${uniqueId}${index}`}
+                        role='option'
+                        onClick={onOptionClicked(option)}
+                        key={index}
+                        aria-selected={option === selectedOption}
+                        ref={ref => itemRefs[index] = ref}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectItems>
+      </Container>
     </>
   )
 }
