@@ -1,5 +1,5 @@
 # react-custom-select
-Accessible custom select element — React version.
+Accessible React select element.
 
 Includes WAI-ARIA role, aria-expanded, aria-haspopup, aria-labelledby, aria-selected and aria-activedescendant attributes for accessibility (a11y).
 
